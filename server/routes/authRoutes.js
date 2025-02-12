@@ -9,6 +9,7 @@ router.post('/request-otp', loginController.otp);
 router.post('/verify-otp', loginController.verifyOtp);
 router.post('/change-password', loginController.changePassword);
 router.get('/profile/:id', loginController.getUserProfile);
+router.post('/parent', loginController.parentregister);
 
 
 module.exports = router;

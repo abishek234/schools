@@ -40,4 +40,14 @@ module.exports = {
   
       await transporter.sendMail(mailOptions);
     },
+    sendMeetingLink : async(email,meetingLink) => {
+      const  mailOptions = {
+      from: '"MyEconics - Learning Management System" <no-reply@yourdomain.com>',
+      to: email,
+      subject: 'Meeting Link',
+      text: `Here is your meeting link: ${meetingLink}`,
+    };
+
+    await transporter.sendMail(mailOptions);
+  },
 }

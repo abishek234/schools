@@ -149,6 +149,19 @@ export const getNavConfig = (userRole) => {
         icon: getIcon('eva:person-fill'),
       }
     );
+  } else if (userRole === 'parent'){
+    navConfig.push(
+      {
+        title: 'dashboard',
+        path: '/dashboard/parentapp',
+        icon: getIcon('eva:home-fill'),
+      },
+      {
+        title: 'meeting room',
+        path: '/dashboard/meetingroom',
+        icon: getIcon('eva:video-fill'),
+      }
+    );
   }
 
   return navConfig;

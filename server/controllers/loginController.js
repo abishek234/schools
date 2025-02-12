@@ -3,6 +3,7 @@ const SuperAdmin = require('../models/SuperAdmin');
 const Admin = require('../models/Admin');
 const Teacher = require('../models/Teacher');
 const Student = require('../models/Student');
+const Parent = require('../models/Parent');
 const bcrypt = require('bcryptjs');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
@@ -19,6 +20,7 @@ exports.login = async (req, res) => {
         if (!user) user = await Admin.findOne({ email });
         if (!user) user = await Teacher.findOne({ email });
         if (!user) user = await Student.findOne({ email });
+        if (!user) user = await Parent.findOne({ email });
 
         // Check if user exists
         if (!user) {
@@ -26,9 +28,9 @@ exports.login = async (req, res) => {
         }
 
         // Compare the password
-        const isMatch = await bcrypt.compare(password, user.password);
+        const isMatch = await user.comparePassword(password);
         if (!isMatch) {
-            return res.status(400).json({ message: 'Invalid credentials' });
+            return res.status(400).json({ message: 'Invalid Password credentials' });
         }
 
 
@@ -152,3 +154,14 @@ exports.changePassword = async (req, res) => {
         res.status(500).json({ message: 'Error changing password.' });
     }
 };
+
+exports.parentregister = async (req, res) => {
+    try {
+        const parent = new Parent(req.body);
+        await parent.save();
+        res.status(201).json(parent);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+ 
+}

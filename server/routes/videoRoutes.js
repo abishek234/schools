@@ -27,6 +27,6 @@ router.get('/videos/:class/:subject/:chapter/:topic/videos', videoController.get
 
 router.get('/videos/:id', videoController.getVideosById);
 
-
+router.post('/video/meeting', videoController.sendMeetLink); 
 
 module.exports = router;

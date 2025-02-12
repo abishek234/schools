@@ -90,6 +90,7 @@ export default function LoginForm() {
                     localStorage.setItem('userclassid', userData.classid);
 
                 }
+                    
                 console.log(response.data.id);
                 toast.success('Logged in successfully');
                 if (userData.role === 'superAdmin') {
@@ -103,6 +104,9 @@ export default function LoginForm() {
                 }
                 else if (userData.role === 'student') {
                     navigate('/dashboard/app', { replace: true });
+                }
+                else if (userData.role === 'parent') {
+                    navigate('/dashboard/parentapp', { replace: true });
                 }
             }
         } catch (error) {

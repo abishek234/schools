@@ -21,7 +21,10 @@ import AttendanceTracking from './pages/AttendanceTracking';
 import AdminTracking from './pages/AdminTracking';
 import StudentTimeTable from './pages/StudentTimetable';
 import StudentDashboardApp from './pages/StudentDashboard';
-import GMeet from './pages/GoogleOAuthWrapper';
+import MeetingRoom from './pages/MeetingRoom';
+import CreateMeeting from './pages/CreateMeeting';
+import ParentDashboardApp from './pages/ParentDashboard';
+
 
 // ----------------------------------------------------------------------
 
@@ -52,7 +55,12 @@ export default function Router() {
         {path:'admintracking',element:<AdminTracking/>},
         {path:'studenttimetable',element:<StudentTimeTable/>},
         {path:'studentapp',element:<StudentDashboardApp/>},
-        {path:'gmeet',element:<GMeet />}
+        {path:'parentapp',element:<ParentDashboardApp/>},
+        {path:'meetingroom',element:<MeetingRoom/>},
+        {path:'createmeeting',element:<CreateMeeting/>}
+
+      
+       
 
 
       ],

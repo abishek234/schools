@@ -19,17 +19,17 @@ const SuperAdminSchema = new mongoose.Schema({
 
 });
 
-// Hash the password before saving the user model
-SuperAdminSchema.methods.comparePassword = async function (candidatePassword) {
-  return await bcrypt.compare(candidatePassword, this.password);
-};
-
 // Pre-save hook to hash passwords before saving
 SuperAdminSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
   const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
+  this.password = bcrypt.hash(this.password, salt);
   next();
 });
+
+// Method to compare passwords
+SuperAdminSchema.methods.comparePassword = async function (candidatePassword) {
+  return await bcrypt.compare(candidatePassword, this.password);
+};
 
 module.exports = mongoose.model('SuperAdmin', SuperAdminSchema);

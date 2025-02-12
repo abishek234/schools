@@ -3,6 +3,7 @@ const Video = require('../models/Video');
 const Teacher = require('../models/Teacher');
 const Assessment = require('../models/Assessment'); 
 const Student = require('../models/Student');
+const { sendMeetingLink } = require('../utils/mailer');
 
 // Add a new video
 exports.createVideo = async (req, res) => {
@@ -242,3 +243,15 @@ exports.getVideosById = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 }
+
+
+exports.sendMeetLink = async (req, res) => {
+    try {
+        const { email, meetingLink } = req.body;
+        await sendMeetingLink(email, meetingLink);
+        res.status(200).json({ message: 'Meeting link sent successfully' });
+    } catch (error) {
+        console.error('Error sending meeting link:', error.message);
+        res.status(500).json({ message: error.message });
+    }
+};
