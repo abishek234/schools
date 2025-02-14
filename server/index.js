@@ -23,25 +23,48 @@ const io = new Server(8000, {
 });
 
 
+const activeParticipants = { teachers: [], parents: [] };
+
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
 
-  socket.on("offer", (offer) => {
-    socket.broadcast.emit("offer", offer);
+  socket.on("join-meeting", (role) => {
+    if (role === "teacher") {
+      activeParticipants.teachers.push(socket.id);
+    } else if (role === "parent") {
+      activeParticipants.parents.push(socket.id);
+    }
+
+    console.log(`User joined as ${role}:`, socket.id);
+    socket.broadcast.emit("user-joined", { role, id: socket.id });
+
+    // Send updated participant list to all users
+    io.emit("update-participants", activeParticipants);
   });
 
-  socket.on("answer", (answer) => {
-    socket.broadcast.emit("answer", answer);
+  socket.on("offer", (offer, senderId, receiverId) => {
+    io.to(receiverId).emit("offer", offer, senderId);
   });
 
-  socket.on("ice-candidate", (candidate) => {
-    socket.broadcast.emit("ice-candidate", candidate);
+  socket.on("answer", (answer, senderId, receiverId) => {
+    io.to(receiverId).emit("answer", answer, senderId);
+  });
+
+  socket.on("ice-candidate", (candidate, senderId, receiverId) => {
+    io.to(receiverId).emit("ice-candidate", candidate, senderId);
   });
 
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id);
+
+    activeParticipants.teachers = activeParticipants.teachers.filter(id => id !== socket.id);
+    activeParticipants.parents = activeParticipants.parents.filter(id => id !== socket.id);
+
+    socket.broadcast.emit("user-left", socket.id);
+    io.emit("update-participants", activeParticipants);
   });
 });
+
 
 const app = express();
 

@@ -10,14 +10,24 @@ const MeetingRoom = () => {
   const [isMeetingValid, setIsMeetingValid] = useState(null);
   const [videoEnabled, setVideoEnabled] = useState(true);
   const [audioEnabled, setAudioEnabled] = useState(true);
+  const [userRole, setUserRole] = useState(""); // "teacher" or "parent"
   const [remoteStreams, setRemoteStreams] = useState([]);
-  
+
   const videoRef = useRef(null);
   const peerConnections = useRef({});
   const socket = useRef(null);
 
   useEffect(() => {
     socket.current = io(SOCKET_SERVER_URL);
+
+    socket.current.on("user-joined", ({ role, id }) => {
+      console.log(`${role} joined: ${id}`);
+      setupPeerConnection(id);
+    });
+
+    socket.current.on("update-participants", (participants) => {
+      console.log("Updated Participants:", participants);
+    });
 
     socket.current.on("offer", async (offer, senderId) => {
       if (!peerConnections.current[senderId]) setupPeerConnection(senderId);
@@ -41,12 +51,18 @@ const MeetingRoom = () => {
   }, []);
 
   const checkMeetingLink = async () => {
-    if (meetingLink.startsWith("http://localhost:3000/meeting")) {
-      setIsMeetingValid(true);
-      setupPeerConnection("teacher");  // "teacher" is the first participant (you can use any unique ID)
-    } else {
+    if (!meetingLink.startsWith("http://localhost:3000/meeting")) {
       setIsMeetingValid(false);
+      return;
     }
+
+    setIsMeetingValid(true);
+    const role = prompt("Enter your role: teacher or parent").toLowerCase();
+    setUserRole(role);
+
+    socket.current.emit("join-meeting", role);
+
+    setupPeerConnection(socket.current.id);
   };
 
   const setupPeerConnection = async (userId) => {
@@ -55,11 +71,18 @@ const MeetingRoom = () => {
     });
 
     peerConnections.current[userId].ontrack = (event) => {
-      setRemoteStreams((prevStreams) => [...prevStreams, event.streams[0]]);
+      setRemoteStreams((prevStreams) => {
+        const newStream = event.streams[0];
+        if (!prevStreams.some(stream => stream.id === newStream.id)) {
+          return [...prevStreams, newStream];
+        }
+        return prevStreams;
+      });
     };
 
     const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
     videoRef.current.srcObject = stream;
+
     stream.getTracks().forEach((track) => peerConnections.current[userId].addTrack(track, stream));
 
     peerConnections.current[userId].onicecandidate = (event) => {
@@ -68,11 +91,10 @@ const MeetingRoom = () => {
       }
     };
 
-    if (userId === "teacher") {
-      // If it's the teacher, create an offer to invite the parent
+    if (userId !== socket.current.id) {
       const offer = await peerConnections.current[userId].createOffer();
       await peerConnections.current[userId].setLocalDescription(offer);
-      socket.current.emit("offer", offer, userId);
+      socket.current.emit("offer", offer, socket.current.id, userId);
     }
   };
 
@@ -118,7 +140,7 @@ const MeetingRoom = () => {
           <Typography variant="h6">Your Video</Typography>
           <video ref={videoRef} autoPlay playsInline style={{ width: "100%", maxWidth: "600px" }} >
             <track kind="captions" />
-            </video>
+          </video>
           <Box mt={2}>
             <Button variant="contained" onClick={toggleVideo} sx={{ mr: 2 }}>
               {videoEnabled ? "Hide Video" : "Show Video"}
@@ -129,23 +151,22 @@ const MeetingRoom = () => {
           </Box>
           {remoteStreams.length > 0 && (
             <Box mt={3}>
-              <Typography variant="h6">Remote Video</Typography>
+              <Typography variant="h6">Participants</Typography>
               {remoteStreams.map((stream, index) => (
-  <video
-    key={index}
-    ref={(ref) => {
-      if (ref) {
-        ref.srcObject = stream;
-      }
-    }}
-    autoPlay
-    playsInline
-    style={{ width: "100%", maxWidth: "600px" }}
-  >
-    <track kind="captions" />
-  </video>
-))}
-
+                <video
+                  key={index}
+                  ref={(ref) => {
+                    if (ref) {
+                      ref.srcObject = stream;
+                    }
+                  }}
+                  autoPlay
+                  playsInline
+                  style={{ width: "100%", maxWidth: "600px" }}
+                >
+                  <track kind="captions" />
+                </video>
+              ))}
             </Box>
           )}
         </Box>
