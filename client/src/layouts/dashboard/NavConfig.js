@@ -166,6 +166,11 @@ export const getNavConfig = (userRole) => {
         path: '/dashboard/chat',
         icon: getIcon('eva:message-circle-outline'),
       },
+      {
+        title: 'profile',
+        path: '/dashboard/profile',
+        icon: getIcon('eva:person-fill'),
+      }
     );
   }
 
