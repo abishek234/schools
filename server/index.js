@@ -13,6 +13,8 @@ const videoRoutes = require('./routes/videoRoutes');
 const timetableRoutes = require('./routes/timetableRoutes');
 const attendanceRoutes = require('./routes/attendanceRoutes');
 const assessmentRoutes = require('./routes/assessmentRoutes');
+const messageRoutes = require('./routes/messageRoutes');
+const Message = require("./models/Message");
 
 const { Server } = require("socket.io");
 const io = new Server(8000, {
@@ -23,47 +25,25 @@ const io = new Server(8000, {
 });
 
 
-const activeParticipants = { teachers: [], parents: [] };
 
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
 
-  socket.on("join-meeting", (role) => {
-    if (role === "teacher") {
-      activeParticipants.teachers.push(socket.id);
-    } else if (role === "parent") {
-      activeParticipants.parents.push(socket.id);
-    }
-
-    console.log(`User joined as ${role}:`, socket.id);
-    socket.broadcast.emit("user-joined", { role, id: socket.id });
-
-    // Send updated participant list to all users
-    io.emit("update-participants", activeParticipants);
+  socket.on("join", (email) => {
+    socket.join(email); // Each user joins a room with their email
   });
 
-  socket.on("offer", (offer, senderId, receiverId) => {
-    io.to(receiverId).emit("offer", offer, senderId);
-  });
-
-  socket.on("answer", (answer, senderId, receiverId) => {
-    io.to(receiverId).emit("answer", answer, senderId);
-  });
-
-  socket.on("ice-candidate", (candidate, senderId, receiverId) => {
-    io.to(receiverId).emit("ice-candidate", candidate, senderId);
+  socket.on("send-message", async ({ senderEmail, receiverEmail, message }) => {
+    const newMessage = new Message({ senderEmail, receiverEmail, message });
+    await newMessage.save();
+    io.to(receiverEmail).emit("receive-message", newMessage);
   });
 
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id);
-
-    activeParticipants.teachers = activeParticipants.teachers.filter(id => id !== socket.id);
-    activeParticipants.parents = activeParticipants.parents.filter(id => id !== socket.id);
-
-    socket.broadcast.emit("user-left", socket.id);
-    io.emit("update-participants", activeParticipants);
   });
 });
+
 
 
 const app = express();
@@ -95,6 +75,7 @@ app.use('/api/videos',videoRoutes);
 app.use('/api/timetables',timetableRoutes);
 app.use('/api/attendances',attendanceRoutes); 
 app.use('/api/assessments',assessmentRoutes);
+app.use('/api/messages',messageRoutes);
 
 
 const PORT = process.env.PORT || 9000;

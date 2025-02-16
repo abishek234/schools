@@ -1,5 +1,5 @@
 // component
-import { get } from 'lodash';
+
 import Iconify from '../../components/Iconify';
 
 // ----------------------------------------------------------------------
@@ -123,6 +123,11 @@ export const getNavConfig = (userRole) => {
         path: '/dashboard/timetable',
         icon: getIcon('eva:calendar-fill'),
       },
+      {
+        title: 'chat',
+        path: '/dashboard/chat',
+        icon: getIcon('eva:message-circle-outline'),
+      },
       
       {
         title: 'profile',
@@ -157,10 +162,10 @@ export const getNavConfig = (userRole) => {
         icon: getIcon('eva:home-fill'),
       },
       {
-        title: 'meeting room',
-        path: '/dashboard/meetingroom',
-        icon: getIcon('eva:video-fill'),
-      }
+        title: 'chat',
+        path: '/dashboard/chat',
+        icon: getIcon('eva:message-circle-outline'),
+      },
     );
   }
 

@@ -24,6 +24,7 @@ import StudentDashboardApp from './pages/StudentDashboard';
 import MeetingRoom from './pages/MeetingRoom';
 import CreateMeeting from './pages/CreateMeeting';
 import ParentDashboardApp from './pages/ParentDashboard';
+import ChatModule from './pages/ChatModule';
 
 
 // ----------------------------------------------------------------------
@@ -34,6 +35,7 @@ export default function Router() {
   const handleDateChange = (date) => {
     console.log('Selected date:', date);
   }
+
   return useRoutes([
     {
       path: '/dashboard',
@@ -57,7 +59,8 @@ export default function Router() {
         {path:'studentapp',element:<StudentDashboardApp/>},
         {path:'parentapp',element:<ParentDashboardApp/>},
         {path:'meetingroom',element:<MeetingRoom/>},
-        {path:'createmeeting',element:<CreateMeeting/>}
+        {path:'createmeeting',element:<CreateMeeting/>},
+        {path:'chat',element:<ChatModule  />}
 
       
        
